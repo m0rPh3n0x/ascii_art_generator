@@ -9,8 +9,10 @@ scale10 = " .:-=+*#%@"[::-1]
 width = 120
 scale = 10
 use_histogram_equalization = True
+use_max_threshold = True
+threshold = 180
 filename = "gen_01.png"
-ascii_art_filename = "{}_ascii_art_{}.txt".format(filename.replace(".png", ""), scale)
+ascii_art_filename = "{}_ascii_art_{}_{}_{}.txt".format(filename.replace(".png", ""), scale, use_histogram_equalization, use_max_threshold)
 
 im = PIL.Image.open(filename).convert('L')
 original_w, original_h = im.size
@@ -25,21 +27,25 @@ if use_histogram_equalization:
     for i in range(256):
         p[i] = np.sum((A == i).astype('int')) / n
         C[i] = int(round(np.sum(p) * 255, 0))
-    A_equal = np.zeros(A.shape)
+    A2 = np.zeros(A.shape)
     for i in range(A.shape[0]):
         for j in range(A.shape[1]):
-            A_equal[i, j] = C[A[i, j]]
+            A2[i, j] = C[A[i, j]]
 
-    # visualization of equalization:
-    plt.subplot(121)
-    plt.imshow(A, cmap='gray')
-    plt.subplot(122)
-    plt.imshow(A_equal, cmap='gray')
-    plt.show()
+if use_max_threshold:
+    A2[np.where(A2 > threshold)] = 255
+
+# visualization of equalization and threshold:
+plt.subplot(121)
+plt.imshow(A, cmap='gray')
+plt.subplot(122)
+plt.imshow(A2, cmap='gray')
+plt.show()
+
 
 step = int(np.ceil(255 / scale))
 if use_histogram_equalization:
-    ascii_art = A_equal // step
+    ascii_art = A2 // step
 else:
     ascii_art = A // step
 
